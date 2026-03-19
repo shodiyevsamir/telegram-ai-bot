@@ -1,14 +1,30 @@
-users = {}
-allowed_users = set()
+from ai import ask_ai
+from database import save_user, is_allowed
+from config import ADMIN_ID
 
-def save_user(user_id):
-    users[user_id] = True
+def register(bot):
 
-def get_users():
-    return list(users.keys())
+    @bot.message_handler(commands=['start'])
+    def start(m):
+        save_user(m.from_user.id)
+        bot.send_message(m.chat.id, "Salom! AI botga xush kelibsiz 🤖")
 
-def allow_user(user_id):
-    allowed_users.add(user_id)
+    @bot.message_handler(func=lambda m: True)
+    def chat(m):
+        user_id = m.from_user.id
 
-def is_allowed(user_id):
-    return user_id in allowed_users
+        if not is_allowed(user_id):
+            bot.send_message(m.chat.id, "⛔ Sizga hali ruxsat berilmagan!")
+
+            bot.send_message(
+                ADMIN_ID,
+                f"📩 Yangi AI so‘rov:\n\nUser ID: {user_id}\nText: {m.text}\n\n/allow {user_id}"
+            )
+            return
+
+        try:
+            reply = ask_ai(m.text)
+            bot.send_message(m.chat.id, reply)
+        except Exception as e:
+            print(e)
+            bot.send_message(m.chat.id, "Xatolik chiqdi 😅")
