@@ -14,7 +14,7 @@ def register(bot):
     def chat(m):
         user_id = m.from_user.id
 
-        # ❌ ruxsat yo‘q
+        # ❌ RUXSAT YO‘Q BO‘LSA
         if not is_allowed(user_id) and not is_premium(user_id):
 
             markup = InlineKeyboardMarkup()
@@ -26,20 +26,36 @@ def register(bot):
                 InlineKeyboardButton("❌ Deny", callback_data=f"deny_{user_id}")
             )
 
-            bot.send_message(m.chat.id, "⛔ Sizga hali ruxsat berilmagan!")
+            # userga javob
+            try:
+                bot.send_message(m.chat.id, "⛔ Sizga hali ruxsat berilmagan!")
+            except Exception as e:
+                print("USERGA XATO:", e)
 
-            bot.send_message(
-                ADMIN_ID,
-                f"📩 Yangi AI so‘rov:\n\nUser ID: {user_id}\nText: {m.text}",
-                reply_markup=markup
-            )
+            # admin ga yuborish (MUHIM FIX)
+            try:
+                bot.send_message(
+                    ADMIN_ID,
+                    f"📩 Yangi AI so‘rov:\n\nUser ID: {user_id}\nText: {m.text}",
+                    reply_markup=markup
+                )
+            except Exception as e:
+                print("ADMINGA XATO:", e)
+
             return
 
+        # ✅ RUXSAT BOR
         try:
             reply = ask_ai(m.text)
-            bot.send_message(m.chat.id, reply)
+
+            try:
+                bot.send_message(m.chat.id, reply)
+            except Exception as e:
+                print("USERGA JAVOB XATO:", e)
+
         except Exception as e:
-            print(e)
+            print("AI XATO:", e)
+
             try:
                 bot.send_message(m.chat.id, "Xatolik chiqdi 😅")
             except:
